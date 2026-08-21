@@ -36,7 +36,8 @@ const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
   req.on("error", reject);
   req.on("end", () => {
     if (exceeded) return reject(Object.assign(new Error("Request body too large"), { status: 413 }));
-    try { resolve(data ? JSON.parse(data) : {}); } catch (error) { reject(error); }
+    try { resolve(data ? JSON.parse(data) : {}); }
+    catch { reject(Object.assign(new Error("Malformed JSON body"), { status: 400 })); }
   });
 });
 
