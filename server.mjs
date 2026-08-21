@@ -24,6 +24,13 @@ const securityHeaders = Object.freeze({
 
 const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml" };
 const json = (res, status, body) => { res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }); res.end(JSON.stringify(body)); };
+const isSameOriginRequest = req => {
+  const fetchSite = req.headers["sec-fetch-site"];
+  if (fetchSite && !["same-origin", "same-site", "none"].includes(fetchSite)) return false;
+  if (!req.headers.origin) return true;
+  try { return new URL(req.headers.origin).host === req.headers.host; }
+  catch { return false; }
+};
 const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
   let data = "";
   let size = 0;
@@ -51,6 +58,9 @@ const server = http.createServer(async (req, res) => {
   try {
     for (const [name, value] of Object.entries(securityHeaders)) res.setHeader(name, value);
     const url = new URL(req.url, "http://localhost");
+    if (url.pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(req.method) && !isSameOriginRequest(req)) {
+      return json(res, 403, { error: "Cross-origin mutation denied" });
+    }
     if (url.pathname === "/health") return json(res, 200, { status: "ok", service: "canary", brightDataConfigured: brightData.configured, now: new Date().toISOString() });
     if (url.pathname === "/api/dashboard" && req.method === "GET") return json(res, 200, dashboard());
     if (url.pathname.startsWith("/api/components/") && req.method === "GET") {
