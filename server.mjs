@@ -12,6 +12,7 @@ const port = Number(process.env.PORT || 3000);
 const brightData = new BrightDataClient();
 const collectorRegistry = JSON.parse(await readFile(join(root, "config", "collectors.json"), "utf8"));
 const allowedCollectorIds = new Set(collectorRegistry.collectors.filter(item => item.enabled).map(item => item.collectorId));
+const mutationHits = new Map();
 let state = createSeed();
 
 const securityHeaders = Object.freeze({
@@ -49,6 +50,15 @@ const areSafeCollectorInputs = value => Array.isArray(value) && value.length <= 
     (typeof field === "number" && Number.isFinite(field)) ||
     (typeof field === "string" && field.length <= 2048))
 );
+const allowMutation = req => {
+  const key = req.socket.remoteAddress || "unknown";
+  const cutoff = Date.now() - 60_000;
+  const recent = (mutationHits.get(key) || []).filter(timestamp => timestamp > cutoff);
+  if (recent.length >= 60) return false;
+  recent.push(Date.now());
+  mutationHits.set(key, recent);
+  return true;
+};
 const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
   let data = "";
   let size = 0;
@@ -78,6 +88,10 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
     if (url.pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(req.method) && !isSameOriginRequest(req)) {
       return json(res, 403, { error: "Cross-origin mutation denied" });
+    }
+    if (url.pathname.startsWith("/api/") && !["GET", "HEAD", "OPTIONS"].includes(req.method) && !allowMutation(req)) {
+      res.setHeader("Retry-After", "60");
+      return json(res, 429, { error: "Too many mutation requests" });
     }
     if (url.pathname === "/health") return json(res, 200, { status: "ok", service: "canary", brightDataConfigured: brightData.configured, now: new Date().toISOString() });
     if (url.pathname === "/api/dashboard" && req.method === "GET") return json(res, 200, dashboard());
