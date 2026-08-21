@@ -81,6 +81,9 @@ const server = http.createServer(async (req, res) => {
       return json(res, 200, dashboard());
     }
     if (url.pathname === "/api/collectors/run" && req.method === "POST") {
+      if (!req.headers["content-type"]?.toLowerCase().startsWith("application/json")) {
+        return json(res, 415, { error: "Content-Type must be application/json" });
+      }
       if (!brightData.configured) return json(res, 503, { error: "Bright Data is not configured", action: "Set BRIGHT_DATA_API_TOKEN and replace the collector ID in config/collectors.json" });
       const input = await body(req); const run = await brightData.triggerCollector(input.collectorId, input.inputs || []); return json(res, 202, run);
     }
