@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+*.md
+.playwright-mcp/
+output/
+data/runtime.json
+node_modules/
+coverage/
+*.log
+.DS_Store

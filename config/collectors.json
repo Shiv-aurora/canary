@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "collectors": [
+    {
+      "key": "controlled-supplier",
+      "collectorId": "c_REPLACE_AFTER_BRIGHT_DATA_SETUP",
+      "sourceId": "src-controlled",
+      "contractVersion": "1.0.0",
+      "enabled": false,
+      "notes": "Controlled reliability fixture; replace ID after creating the Scraper Studio collector."
+    }
+  ]
+}
