@@ -24,7 +24,17 @@ const securityHeaders = Object.freeze({
   "X-Frame-Options": "DENY"
 });
 
-const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml" };
+const types = {
+  ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".ico": "image/x-icon"
+};
 const json = (res, status, body) => { res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }); res.end(JSON.stringify(body)); };
 const isSameOriginRequest = req => {
   const fetchSite = req.headers["sec-fetch-site"];
@@ -113,7 +123,13 @@ const server = http.createServer(async (req, res) => {
     const relative = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
     const file = resolve(publicRoot, relative);
     if (!file.startsWith(`${publicRoot}${sep}`)) return json(res, 403, { error: "Forbidden" });
-    const content = await readFile(file); res.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" }); res.end(content);
+    const extension = extname(file).toLowerCase();
+    const content = await readFile(file);
+    res.writeHead(200, {
+      "Content-Type": types[extension] || "application/octet-stream",
+      "Cache-Control": extension === ".html" ? "no-store" : "public, max-age=3600"
+    });
+    res.end(content);
   } catch (error) {
     if (error.code === "ENOENT") return json(res, 404, { error: "Not found" });
     json(res, error.status || 500, { error: error.status ? error.message : "Internal server error" });
