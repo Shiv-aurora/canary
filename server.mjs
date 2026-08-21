@@ -12,6 +12,16 @@ const port = Number(process.env.PORT || 3000);
 const brightData = new BrightDataClient();
 let state = createSeed();
 
+const securityHeaders = Object.freeze({
+  "Content-Security-Policy": "default-src 'self'; img-src 'self' data:; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Resource-Policy": "same-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Referrer-Policy": "no-referrer",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY"
+});
+
 const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml" };
 const json = (res, status, body) => { res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }); res.end(JSON.stringify(body)); };
 const body = req => new Promise((resolve, reject) => { let data = ""; req.on("data", c => data += c); req.on("end", () => { try { resolve(data ? JSON.parse(data) : {}); } catch (e) { reject(e); } }); });
@@ -24,6 +34,7 @@ function dashboard() {
 
 const server = http.createServer(async (req, res) => {
   try {
+    for (const [name, value] of Object.entries(securityHeaders)) res.setHeader(name, value);
     const url = new URL(req.url, `http://${req.headers.host}`);
     if (url.pathname === "/health") return json(res, 200, { status: "ok", service: "canary", brightDataConfigured: brightData.configured, now: new Date().toISOString() });
     if (url.pathname === "/api/dashboard" && req.method === "GET") return json(res, 200, dashboard());
