@@ -3,6 +3,7 @@ let selected = "cmp-lidar";
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const colors = { critical: "#ff6b63", high: "#f6c85d", medium: "#45d68d", low: "#45d68d" };
+const escapeHtml = value => String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
 async function api(path, options) { const r = await fetch(path, options); const value = await r.json(); if (!r.ok) throw new Error(value.error || "Request failed"); return value; }
 const number = n => new Intl.NumberFormat("en-US").format(n);
 function toast(message) { const el = $("#toast"); el.textContent = message; el.classList.add("show"); setTimeout(() => el.classList.remove("show"), 2600); }
@@ -13,7 +14,7 @@ function renderSummary() {
   $("#critical-count").textContent = data.summary.critical; $("#component-count").textContent = data.summary.components; $("#healthy-count").textContent = `${data.summary.sourcesHealthy}/${data.sources.length}`;
 }
 function renderRisks() {
-  $("#risk-list").innerHTML = [...data.components].sort((a,b) => b.score-a.score).map(c => `<button class="risk-card ${c.id===selected?"active":""}" data-component="${c.id}"><i class="risk-bar" style="background:${colors[c.severity]}"></i><div><h3>${c.name}</h3><p>${c.mpn} · ${c.assembly}</p></div><strong>${c.score}<small>/100</small></strong></button>`).join("");
+  $("#risk-list").innerHTML = [...data.components].sort((a,b) => b.score-a.score).map(c => `<button class="risk-card ${c.id===selected?"active":""}" data-component="${escapeHtml(c.id)}"><i class="risk-bar" style="background:${colors[c.severity] || colors.low}"></i><div><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.mpn)} · ${escapeHtml(c.assembly)}</p></div><strong>${escapeHtml(c.score)}<small>/100</small></strong></button>`).join("");
   $$('[data-component]').forEach(el => el.onclick = () => { selected=el.dataset.component; renderRisks(); renderDetail(); });
 }
 function drawSparkline(canvas, values) {
@@ -27,7 +28,7 @@ function drawSparkline(canvas, values) {
 function renderDetail() {
   const c=data.components.find(x=>x.id===selected), trend=data.trends[selected]||[];
   $("#detail-name").textContent=c.name; $("#detail-mpn").textContent=c.mpn; $("#detail-assembly").textContent=c.assembly; $("#detail-severity").textContent=c.severity; $("#detail-severity").className=`severity ${c.severity}`; $("#current-stock").textContent=number(c.inventory); $("#trend-chart").innerHTML='<canvas aria-label="Inventory trend"></canvas>'; drawSparkline($("#trend-chart canvas"),trend);
-  $("#risk-factors").innerHTML=`<div class="factor"><span>Lead time</span><b>${c.leadTimeDays} days</b></div><div class="factor"><span>Supplier coverage</span><b>${c.supplierCount} source${c.supplierCount===1?"":"s"}</b></div><div class="factor"><span>Source confidence</span><b>${Math.round(c.sourceConfidence*100)}%</b></div>`;
+  $("#risk-factors").innerHTML=`<div class="factor"><span>Lead time</span><b>${escapeHtml(c.leadTimeDays)} days</b></div><div class="factor"><span>Supplier coverage</span><b>${escapeHtml(c.supplierCount)} source${c.supplierCount===1?"":"s"}</b></div><div class="factor"><span>Source confidence</span><b>${escapeHtml(Math.round(c.sourceConfidence*100))}%</b></div>`;
 }
 function edge(x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),angle=Math.atan2(dy,dx)*180/Math.PI;return `<i class="edge" style="left:${x1}%;top:${y1}%;width:${len}%;transform:rotate(${angle}deg)"></i>`}
 function renderGraph() {
