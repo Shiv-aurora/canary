@@ -10,6 +10,8 @@ const root = fileURLToPath(new URL(".", import.meta.url));
 const publicRoot = join(root, "public");
 const port = Number(process.env.PORT || 3000);
 const brightData = new BrightDataClient();
+const collectorRegistry = JSON.parse(await readFile(join(root, "config", "collectors.json"), "utf8"));
+const allowedCollectorIds = new Set(collectorRegistry.collectors.filter(item => item.enabled).map(item => item.collectorId));
 let state = createSeed();
 
 const securityHeaders = Object.freeze({
@@ -95,7 +97,9 @@ const server = http.createServer(async (req, res) => {
         return json(res, 415, { error: "Content-Type must be application/json" });
       }
       if (!brightData.configured) return json(res, 503, { error: "Bright Data is not configured", action: "Set BRIGHT_DATA_API_TOKEN and replace the collector ID in config/collectors.json" });
-      const input = await body(req); const run = await brightData.triggerCollector(input.collectorId, input.inputs || []); return json(res, 202, run);
+      const input = await body(req);
+      if (!allowedCollectorIds.has(input.collectorId)) return json(res, 403, { error: "Collector is not enabled in the registry" });
+      const run = await brightData.triggerCollector(input.collectorId, input.inputs || []); return json(res, 202, run);
     }
     if (req.method !== "GET") return json(res, 404, { error: "Not found" });
     const relative = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
