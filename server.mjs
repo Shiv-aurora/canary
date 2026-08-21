@@ -24,7 +24,21 @@ const securityHeaders = Object.freeze({
 
 const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml" };
 const json = (res, status, body) => { res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }); res.end(JSON.stringify(body)); };
-const body = req => new Promise((resolve, reject) => { let data = ""; req.on("data", c => data += c); req.on("end", () => { try { resolve(data ? JSON.parse(data) : {}); } catch (e) { reject(e); } }); });
+const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
+  let data = "";
+  let size = 0;
+  let exceeded = false;
+  req.on("data", chunk => {
+    size += Buffer.byteLength(chunk);
+    if (size > limitBytes) exceeded = true;
+    else if (!exceeded) data += chunk;
+  });
+  req.on("error", reject);
+  req.on("end", () => {
+    if (exceeded) return reject(Object.assign(new Error("Request body too large"), { status: 413 }));
+    try { resolve(data ? JSON.parse(data) : {}); } catch (error) { reject(error); }
+  });
+});
 
 function dashboard() {
   const critical = state.components.filter(c => c.severity === "critical").length;
@@ -76,7 +90,7 @@ const server = http.createServer(async (req, res) => {
     const content = await readFile(file); res.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" }); res.end(content);
   } catch (error) {
     if (error.code === "ENOENT") return json(res, 404, { error: "Not found" });
-    json(res, 500, { error: error.message });
+    json(res, error.status || 500, { error: error.status ? error.message : "Internal server error" });
   }
 });
 
