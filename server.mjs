@@ -1,6 +1,6 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, join, normalize } from "node:path";
+import { extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createSeed } from "./lib/seed.mjs";
 import { transitionSource } from "./lib/domain.mjs";
@@ -70,10 +70,9 @@ const server = http.createServer(async (req, res) => {
       const input = await body(req); const run = await brightData.triggerCollector(input.collectorId, input.inputs || []); return json(res, 202, run);
     }
     if (req.method !== "GET") return json(res, 404, { error: "Not found" });
-    const relative = url.pathname === "/" ? "index.html" : url.pathname.slice(1);
-    const safe = normalize(relative).replace(/^(\.\.(\/|\\|$))+/, "");
-    const file = join(publicRoot, safe);
-    if (!file.startsWith(publicRoot)) return json(res, 403, { error: "Forbidden" });
+    const relative = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
+    const file = resolve(publicRoot, relative);
+    if (!file.startsWith(`${publicRoot}${sep}`)) return json(res, 403, { error: "Forbidden" });
     const content = await readFile(file); res.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream" }); res.end(content);
   } catch (error) {
     if (error.code === "ENOENT") return json(res, 404, { error: "Not found" });
