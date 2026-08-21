@@ -35,7 +35,7 @@ function dashboard() {
 const server = http.createServer(async (req, res) => {
   try {
     for (const [name, value] of Object.entries(securityHeaders)) res.setHeader(name, value);
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url, "http://localhost");
     if (url.pathname === "/health") return json(res, 200, { status: "ok", service: "canary", brightDataConfigured: brightData.configured, now: new Date().toISOString() });
     if (url.pathname === "/api/dashboard" && req.method === "GET") return json(res, 200, dashboard());
     if (url.pathname.startsWith("/api/components/") && req.method === "GET") {
