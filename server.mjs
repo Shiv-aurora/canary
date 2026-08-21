@@ -33,6 +33,12 @@ const isSameOriginRequest = req => {
   try { return new URL(req.headers.origin).host === req.headers.host; }
   catch { return false; }
 };
+const areSafeCollectorInputs = value => Array.isArray(value) && value.length <= 50 && value.every(item =>
+  item && typeof item === "object" && !Array.isArray(item) && Object.keys(item).length <= 25 &&
+  Object.values(item).every(field => field == null || typeof field === "boolean" ||
+    (typeof field === "number" && Number.isFinite(field)) ||
+    (typeof field === "string" && field.length <= 2048))
+);
 const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
   let data = "";
   let size = 0;
@@ -99,7 +105,9 @@ const server = http.createServer(async (req, res) => {
       if (!brightData.configured) return json(res, 503, { error: "Bright Data is not configured", action: "Set BRIGHT_DATA_API_TOKEN and replace the collector ID in config/collectors.json" });
       const input = await body(req);
       if (!allowedCollectorIds.has(input.collectorId)) return json(res, 403, { error: "Collector is not enabled in the registry" });
-      const run = await brightData.triggerCollector(input.collectorId, input.inputs || []); return json(res, 202, run);
+      const inputs = input.inputs ?? [];
+      if (!areSafeCollectorInputs(inputs)) return json(res, 400, { error: "Collector inputs must be a bounded array of scalar records" });
+      const run = await brightData.triggerCollector(input.collectorId, inputs); return json(res, 202, run);
     }
     if (req.method !== "GET") return json(res, 404, { error: "Not found" });
     const relative = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));
