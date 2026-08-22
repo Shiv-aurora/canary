@@ -16,7 +16,7 @@
         { "url": "https://www.robotshop.com/products/benewake-tfmini-plus-micro-lidar-module-uart-i2c-12-m" }
       ],
       "contractVersion": "1.0.0",
-      "schedule": "0 */6 * * *",
+      "schedule": "0 6 * * *",
       "enabled": false,
       "kind": "live",
       "notes": "US regional price and exact unit inventory for the hero LiDAR component."
@@ -35,7 +35,7 @@
         { "url": "https://botland.store/time-of-flight-sensor/13634-laser-distance-sensor-lidar-tfmini-plus-uart-i2c-12m-5903351249089.html" }
       ],
       "contractVersion": "1.0.0",
-      "schedule": "15 */6 * * *",
+      "schedule": "0 6 * * *",
       "enabled": false,
       "kind": "live",
       "notes": "EU price, exact quantity, shipping window, and replenishment lead time."
@@ -54,7 +54,7 @@
         { "url": "https://my.cytron.io/p-tfmini-plus-micro-lidar-module-uart-12m" }
       ],
       "contractVersion": "1.0.0",
-      "schedule": "30 */6 * * *",
+      "schedule": "0 6 * * *",
       "enabled": false,
       "kind": "live",
       "notes": "Southeast Asian lifecycle and availability signal; currently exposes discontinued status."
@@ -73,7 +73,7 @@
         { "url": "https://www.seeedstudio.com/TFmini-Plus-LIDAR-Range-Finder-based-on-ToF-p-3222.html" }
       ],
       "contractVersion": "1.0.0",
-      "schedule": "45 */6 * * *",
+      "schedule": "0 6 * * *",
       "enabled": false,
       "kind": "live",
       "notes": "Manufacturer-region price, availability, volume pricing, and lifecycle signal."
