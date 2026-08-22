@@ -23,3 +23,19 @@ test("failed extraction records degradation without a business observation", asy
   assert.equal(result.sourceState.state, "degraded");
   assert.equal((await store.snapshot()).observations.length, 0);
 });
+
+test("catalog collection gives larger Bright Data batches enough time to finish", async () => {
+  let pollOptions;
+  let triggeredInputs;
+  const inputs = Array.from({ length: 12 }, (_, index) => ({ url: `https://supplier.example/item-${index}`, componentId: "cmp-internal", manufacturer: "Internal metadata" }));
+  const catalogRegistry = { collectors: [{ ...registry.collectors[0], inputs }] };
+  const client = {
+    triggerCollector: async (_collectorId, payload) => { triggeredInputs = payload; return { collection_id: "j_catalog" }; },
+    pollDataset: async (_id, options) => { pollOptions = options; return [{ title: "Catalog item", price: "$12.00" }]; }
+  };
+  const store = await new MemoryObservationStore().init();
+  const service = new IngestionService({ client, store, registry: catalogRegistry });
+  await service.collect("supplier");
+  assert.equal(pollOptions.timeoutMs, 240_000);
+  assert.deepEqual(triggeredInputs[0], { url: "https://supplier.example/item-0" });
+});

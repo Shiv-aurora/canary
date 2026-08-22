@@ -13,13 +13,24 @@
       "manufacturer": "Benewake",
       "region": { "country": "US", "market": "North America", "currency": "USD" },
       "inputs": [
-        { "url": "https://www.robotshop.com/products/benewake-tfmini-plus-micro-lidar-module-uart-i2c-12-m" }
+        { "url": "https://www.robotshop.com/products/benewake-tfmini-plus-micro-lidar-module-uart-i2c-12-m", "componentId": "cmp-lidar", "manufacturer": "Benewake" },
+        { "url": "https://www.robotshop.com/products/atom-lidar-single-point-distance-sensor", "componentId": "cmp-lidar", "manufacturer": "VSemi" },
+        { "url": "https://www.robotshop.com/products/robot-power-hydra-triple-channel-r-c-h-bridge-motor-controller-65a-6-28v", "componentId": "cmp-motor", "manufacturer": "Robot Power" },
+        { "url": "https://www.robotshop.com/products/megamoto-dual-channel-h-bridge-motor-controller-for-arduino-13a-5-28v", "componentId": "cmp-motor", "manufacturer": "Robot Power" },
+        { "url": "https://www.robotshop.com/products/cytron-2-channel-10a-uno-robot-controller", "componentId": "cmp-motor", "manufacturer": "Cytron" },
+        { "url": "https://www.robotshop.com/products/robot-power-scorpion-xl-20-dual-channel-r-c-motor-controller-20a-55-28v", "componentId": "cmp-motor", "manufacturer": "Robot Power" },
+        { "url": "https://www.robotshop.com/products/arduino-motor-shield-rev3", "componentId": "cmp-motor", "manufacturer": "Arduino" },
+        { "url": "https://www.robotshop.com/products/lidar-lite-3-laser-rangefinder", "componentId": "cmp-lidar", "manufacturer": "Garmin" },
+        { "url": "https://www.robotshop.com/products/mangdang-mini-pupper-stl-06p-lidar-module", "componentId": "cmp-lidar", "manufacturer": "MANGDANG" },
+        { "url": "https://www.robotshop.com/products/dfrobotshop-rover-robot-controller-board-v2", "componentId": "cmp-motor", "manufacturer": "DFRobot" },
+        { "url": "https://www.robotshop.com/products/mini-dfrobotshop-rover-kit-arduino-uno", "componentId": "cmp-motor", "manufacturer": "RobotShop" },
+        { "url": "https://www.robotshop.com/products/roboworks-rosbot-2-orin-nano", "componentId": "cmp-som", "manufacturer": "Roboworks" }
       ],
       "contractVersion": "1.0.0",
       "schedule": "0 6 * * *",
       "enabled": true,
       "kind": "live",
-      "notes": "Verified live on 2026-08-22: USD price, exact low-stock inventory, SKU, title, and canonical URL."
+      "notes": "Verified live catalog on 2026-08-22: 12/12 hardware products with USD pricing, stock evidence when displayed, SKU, title, and canonical URL."
     },
     {
       "key": "botland-pl-tfmini-plus",
@@ -32,13 +43,24 @@
       "manufacturer": "Benewake",
       "region": { "country": "PL", "market": "European Union", "currency": "EUR" },
       "inputs": [
-        { "url": "https://botland.store/time-of-flight-sensor/13634-laser-distance-sensor-lidar-tfmini-plus-uart-i2c-12m-5903351249089.html" }
+        { "url": "https://botland.store/time-of-flight-sensor/13634-laser-distance-sensor-lidar-tfmini-plus-uart-i2c-12m-5903351249089.html", "componentId": "cmp-lidar", "manufacturer": "Benewake" },
+        { "url": "https://botland.store/arduino-modulino/28936-arduino-modulino-motors-dual-channel-motor-controller-5v-24v38a-max2221-qwiic-abx00114-7630049205956.html", "componentId": "cmp-motor", "manufacturer": "Arduino" },
+        { "url": "https://botland.store/rp2040-microcontroller-boards/23815-metro-rp2040-development-board-with-rp2040-microcontroller-adafruit-5786-5904422384661.html", "componentId": "cmp-som", "manufacturer": "Adafruit" },
+        { "url": "https://botland.store/unit-modules-expansion-modules/26016-rollercan-unit-brushless-motor-with-stm32-controller-unit-extension-module-m5stack-u188-6972934175687.html", "componentId": "cmp-motor", "manufacturer": "M5Stack" },
+        { "url": "https://botland.store/dc-motor-controllers/6906-simple-dc-28v-3a-motor-driver-module-with-knob.html", "componentId": "cmp-motor", "manufacturer": "OEM" },
+        { "url": "https://botland.store/unit-modules-expansion-modules/26086-timerpwr-unit-power-management-module-with-066-oled-display-ina3221-unit-extension-module-m5stack-u189-6972934175588.html", "componentId": "cmp-bms", "manufacturer": "M5Stack" },
+        { "url": "https://botland.store/boards-with-rp235x-microcontroller/28564-nula-max-rp2350-arduino-form-factor-development-board-without-headers-soldered-333351-732388644308.html", "componentId": "cmp-som", "manufacturer": "Soldered" },
+        { "url": "https://botland.store/motor-drivers-modules/13999-cytron-maker-drive-mx1508-two-channel-motor-controller-95v1a-5904422321802.html", "componentId": "cmp-motor", "manufacturer": "Cytron" },
+        { "url": "https://botland.store/motor-drivers-modules/13450-cytron-md10-pot-dc-motors-controller-30v-10a-switch-potentiometer-5904422377274.html", "componentId": "cmp-motor", "manufacturer": "Cytron" },
+        { "url": "https://botland.store/motor-drivers-modules/3164-l298n-two-channel-motor-controller-12v-2a-5904422359317.html", "componentId": "cmp-motor", "manufacturer": "OEM" },
+        { "url": "https://botland.store/motor-drivers-modules/14000-cytron-md20a-single-channel-motor-controller-30v20a-5904422342326.html", "componentId": "cmp-motor", "manufacturer": "Cytron" },
+        { "url": "https://botland.store/motor-drivers-modules/12412-cytron-md13s-single-channel-30v-13a-motor-controller-5904422377090.html", "componentId": "cmp-motor", "manufacturer": "Cytron" }
       ],
       "contractVersion": "1.0.0",
       "schedule": "0 6 * * *",
       "enabled": true,
       "kind": "live",
-      "notes": "Verified live on 2026-08-22: EUR price, temporary unavailability, delivery status, SKU, and canonical URL; exact inventory remains null when absent."
+      "notes": "Verified live catalog on 2026-08-22: 12/12 hardware products with EUR pricing, availability and delivery evidence, SKU, and canonical URL; exact inventory remains null when absent."
     },
     {
       "key": "cytron-my-tfmini-plus",

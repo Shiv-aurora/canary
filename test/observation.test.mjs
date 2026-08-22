@@ -70,6 +70,31 @@ test("normalizes verified Botland output without inventing unavailable inventory
   assert.equal(validateLiveObservation(observation).valid, true);
 });
 
+test("maps catalog rows to the configured BOM component and manufacturer by source URL", () => {
+  const catalogCollector = {
+    ...collector,
+    componentId: "cmp-lidar",
+    manufacturer: "Benewake",
+    inputs: [
+      { url: "https://supplier.example/lidar", componentId: "cmp-lidar", manufacturer: "Benewake" },
+      { url: "https://supplier.example/motor-driver", componentId: "cmp-motor", manufacturer: "Cytron" }
+    ]
+  };
+  const observation = normalizeObservation({
+    product_title: "Dual-channel motor controller",
+    price: { value: 36.32, currency: "USD" },
+    stock: "Only 2 units left",
+    sku: "RB-Cyt-230",
+    url: "https://supplier.example/motor-driver",
+    input: { url: "https://supplier.example/motor-driver" }
+  }, catalogCollector, { runId: "j_catalog", collectedAt: "2026-08-22T12:00:00.000Z" });
+
+  assert.equal(observation.componentId, "cmp-motor");
+  assert.equal(observation.manufacturer, "Cytron");
+  assert.equal(observation.inventory, 2);
+  assert.equal(validateLiveObservation(observation).valid, true);
+});
+
 test("empty and schema-invalid collector runs are degraded", () => {
   assert.equal(assessCollection([], collector).state, "degraded");
   const result = assessCollection([{ title: "Redesigned page without supply fields" }], collector, { runId: "j_bad" });
