@@ -82,7 +82,7 @@ function dashboard() {
   return { ...state, summary: { readiness: Math.max(0, 94 - critical * 18 - degraded * 12), critical, components: state.components.length, sourcesHealthy: state.sources.length - degraded } };
 }
 
-const server = http.createServer(async (req, res) => {
+export async function handleRequest(req, res) {
   try {
     for (const [name, value] of Object.entries(securityHeaders)) res.setHeader(name, value);
     const url = new URL(req.url, "http://localhost");
@@ -148,6 +148,9 @@ const server = http.createServer(async (req, res) => {
     if (error.code === "ENOENT") return json(res, 404, { error: "Not found" });
     json(res, error.status || 500, { error: error.status ? error.message : "Internal server error" });
   }
-});
+}
 
-server.listen(port, () => console.log(`CANARY listening on http://localhost:${port}`));
+if (!process.env.VERCEL) {
+  const server = http.createServer(handleRequest);
+  server.listen(port, () => console.log(`CANARY listening on http://localhost:${port}`));
+}
