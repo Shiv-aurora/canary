@@ -95,7 +95,11 @@ async function dashboard() {
       kind: collector.enabled ? "live" : "planned",
       region: collector.region,
       contractVersion: collector.contractVersion,
-      errors: health?.errors || (collector.enabled ? [] : ["Collector ID pending Bright Data authentication"])
+      errors: health?.errors || (collector.enabled ? [] : [
+        collector.collectorId.startsWith("c_PENDING_")
+          ? "Collector creation is pending"
+          : "Collector generation is incomplete; source remains disabled"
+      ])
     };
   });
   const sources = [...state.sources.filter(source => source.kind === "controlled"), ...configuredSources];
