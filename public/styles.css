@@ -16,6 +16,20 @@ strong,b{font-weight:600}
 .button,.lime-link,.primary-button,.danger-button,.verify-button{font-weight:600}
 .avatar{font-weight:600}
 
+/* Live Bright Data operations */
+.data-pill.live i{background:var(--green)}
+.source-region{margin:13px 0 0;color:var(--muted);font:9px var(--mono);text-transform:uppercase;letter-spacing:.06em}
+.source-error{margin:12px 0 0;padding:10px;border-radius:8px;background:#fff8e9;color:#8a650e;font:9px/1.5 var(--mono)}
+.source-run{margin-top:13px;border:0;border-radius:8px;background:var(--ink);color:#fff;padding:9px 11px;font:9px var(--mono)}
+.source-run:disabled{opacity:.55}
+.runs-panel{margin-top:16px;padding:24px}
+.run-list{display:grid;margin-top:17px}
+.run-row{display:grid;grid-template-columns:75px 1.4fr .6fr .8fr;gap:16px;align-items:center;padding:13px 0;border-top:1px solid var(--line);font-size:10px}
+.run-row>div b,.run-row>div small{display:block}.run-row>div small,.run-row time{margin-top:4px;color:var(--muted);font:8px var(--mono)}
+.run-row strong{font:9px var(--mono)}.run-status{font:8px var(--mono);text-transform:uppercase}.run-status.complete{color:var(--green)}.run-status.failed,.run-status.invalid{color:var(--red)}
+.empty-run{display:flex;flex-direction:column;gap:7px;padding:25px 0;color:var(--muted);font-size:11px}.empty-run b{color:var(--ink);font-size:12px}
+@media(max-width:720px){.run-row{grid-template-columns:70px 1fr}.run-row>strong,.run-row>time{display:none}}
+
 /* Official CANARY logo */
 .wordmark img,.brand img{display:block;width:auto;object-fit:contain}
 .site-nav .wordmark img{height:42px}
