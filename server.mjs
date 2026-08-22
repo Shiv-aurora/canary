@@ -106,7 +106,16 @@ async function dashboard() {
   const liveInventory = liveObservations.filter(item => item.componentId === "cmp-lidar" && item.inventory != null).sort((a, b) => new Date(a.collectedAt) - new Date(b.collectedAt));
   const trends = { ...state.trends, ...(liveInventory.length ? { "cmp-lidar": liveInventory.map(item => item.inventory) } : {}) };
   const observations = [...state.observations, ...liveObservations];
-  const healingEvents = [...state.healingEvents, ...persisted.healingEvents];
+  const verifiedHealingEvents = collectorRegistry.collectors.flatMap(collector => {
+    const proof = collector.healingProof;
+    if (!proof || proof.status !== "recovered") return [];
+    return [
+      { at: proof.startedAt, sourceId: collector.sourceId, collectorId: collector.collectorId, state: "degraded", title: "Live contract degradation confirmed", detail: `${proof.field} was absent in snapshot ${proof.degradedSnapshotId}; the row was quarantined from that field contract` },
+      { at: proof.startedAt, sourceId: collector.sourceId, collectorId: collector.collectorId, state: "healing", title: "Bright Data repair executed", detail: `Planner and code-fixer updated ${collector.collectorId} in place` },
+      { at: proof.finishedAt, sourceId: collector.sourceId, collectorId: collector.collectorId, state: "recovered", title: "Live recovery verified", detail: `${proof.verifiedRows}/${proof.verifiedRows} rows passed contract ${collector.contractVersion} in ${proof.verificationSnapshotId}; ${proof.field}=${proof.expectedValue}; Collector ID unchanged` }
+    ];
+  });
+  const healingEvents = [...state.healingEvents, ...persisted.healingEvents, ...verifiedHealingEvents];
   const critical = state.components.filter(c => c.severity === "critical").length;
   const degraded = sources.filter(s => ["degraded", "healing"].includes(s.state)).length;
   const healthy = sources.filter(s => ["healthy", "recovered"].includes(s.state)).length;

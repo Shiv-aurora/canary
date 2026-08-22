@@ -60,6 +60,16 @@
       "schedule": "0 6 * * *",
       "enabled": true,
       "kind": "live",
+      "healingProof": {
+        "status": "recovered",
+        "field": "manufacturer",
+        "expectedValue": "Arduino",
+        "degradedSnapshotId": "j_mt4x5hn22r4ot4zgo6",
+        "verificationSnapshotId": "j_mt4xawg838tcyqemk",
+        "verifiedRows": 12,
+        "startedAt": "2026-08-22T21:58:17.000Z",
+        "finishedAt": "2026-08-22T22:02:24.065Z"
+      },
       "notes": "Verified live catalog on 2026-08-22: 12/12 hardware products with EUR pricing, availability and delivery evidence, SKU, and canonical URL; exact inventory remains null when absent."
     },
     {
