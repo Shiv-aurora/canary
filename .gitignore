@@ -3,9 +3,12 @@
 !.env.example
 *.md
 .playwright-mcp/
+.playwright-cli/
 output/
 data/runtime.json
 node_modules/
 coverage/
 *.log
 .DS_Store
+.vercel/
+skills-lock.json
