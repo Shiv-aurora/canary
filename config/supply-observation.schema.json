@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://canary-supply-intelligence.vercel.app/schemas/supply-observation-v1.json",
+  "title": "CANARY Supply Observation",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["componentId", "supplierId", "sourceId", "collectedAt", "availability", "provenance"],
+  "properties": {
+    "schemaVersion": { "const": "1.0.0" },
+    "componentId": { "type": "string", "minLength": 1 },
+    "supplierId": { "type": "string", "minLength": 1 },
+    "sourceId": { "type": "string", "minLength": 1 },
+    "mpn": { "type": ["string", "null"] },
+    "manufacturer": { "type": ["string", "null"] },
+    "title": { "type": ["string", "null"] },
+    "collectedAt": { "type": "string", "format": "date-time" },
+    "inventory": { "type": ["number", "null"], "minimum": 0 },
+    "price": {
+      "type": ["object", "null"],
+      "required": ["amount", "currency"],
+      "properties": {
+        "amount": { "type": "number", "minimum": 0 },
+        "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+      }
+    },
+    "leadTimeDays": { "type": ["number", "null"], "minimum": 0 },
+    "availability": { "enum": ["in_stock", "low_stock", "backorder", "preorder", "out_of_stock", "discontinued", "unknown"] },
+    "lifecycle": { "enum": ["active", "nrnd", "obsolete", "unknown"] },
+    "provenance": {
+      "type": "object",
+      "required": ["url", "collectorId", "runId", "kind", "region"],
+      "properties": {
+        "url": { "type": "string", "format": "uri" },
+        "collectorId": { "type": "string", "pattern": "^c_" },
+        "runId": { "type": "string", "minLength": 1 },
+        "kind": { "enum": ["live", "seeded", "controlled"] },
+        "region": { "type": "string", "minLength": 2 },
+        "rawEvidence": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

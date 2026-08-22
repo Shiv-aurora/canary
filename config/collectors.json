@@ -1,13 +1,99 @@
 {
-  "version": 1,
+  "version": 2,
+  "contractVersion": "1.0.0",
   "collectors": [
     {
-      "key": "controlled-supplier",
-      "collectorId": "c_REPLACE_AFTER_BRIGHT_DATA_SETUP",
-      "sourceId": "src-controlled",
+      "key": "robotshop-us-tfmini-plus",
+      "name": "RobotShop US",
+      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "sourceId": "src-robotshop-us",
+      "supplierId": "sup-robotshop-us",
+      "componentId": "cmp-lidar",
+      "mpn": "TFminiPlus_UART",
+      "manufacturer": "Benewake",
+      "region": { "country": "US", "market": "North America", "currency": "USD" },
+      "inputs": [
+        { "url": "https://www.robotshop.com/products/benewake-tfmini-plus-micro-lidar-module-uart-i2c-12-m" }
+      ],
       "contractVersion": "1.0.0",
+      "schedule": "0 */6 * * *",
       "enabled": false,
-      "notes": "Controlled reliability fixture; replace ID after creating the Scraper Studio collector."
+      "kind": "live",
+      "notes": "US regional price and exact unit inventory for the hero LiDAR component."
+    },
+    {
+      "key": "botland-pl-tfmini-plus",
+      "name": "Botland Poland",
+      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "sourceId": "src-botland-pl",
+      "supplierId": "sup-botland-pl",
+      "componentId": "cmp-lidar",
+      "mpn": "TFmini Plus",
+      "manufacturer": "Benewake",
+      "region": { "country": "PL", "market": "European Union", "currency": "EUR" },
+      "inputs": [
+        { "url": "https://botland.store/time-of-flight-sensor/13634-laser-distance-sensor-lidar-tfmini-plus-uart-i2c-12m-5903351249089.html" }
+      ],
+      "contractVersion": "1.0.0",
+      "schedule": "15 */6 * * *",
+      "enabled": false,
+      "kind": "live",
+      "notes": "EU price, exact quantity, shipping window, and replenishment lead time."
+    },
+    {
+      "key": "cytron-my-tfmini-plus",
+      "name": "Cytron Malaysia",
+      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "sourceId": "src-cytron-my",
+      "supplierId": "sup-cytron-my",
+      "componentId": "cmp-lidar",
+      "mpn": "SN-LIDAR-TFMINI-P",
+      "manufacturer": "Benewake",
+      "region": { "country": "MY", "market": "Southeast Asia", "currency": "MYR" },
+      "inputs": [
+        { "url": "https://my.cytron.io/p-tfmini-plus-micro-lidar-module-uart-12m" }
+      ],
+      "contractVersion": "1.0.0",
+      "schedule": "30 */6 * * *",
+      "enabled": false,
+      "kind": "live",
+      "notes": "Southeast Asian lifecycle and availability signal; currently exposes discontinued status."
+    },
+    {
+      "key": "seeed-cn-tfmini-plus",
+      "name": "Seeed Studio China",
+      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "sourceId": "src-seeed-cn",
+      "supplierId": "sup-seeed-cn",
+      "componentId": "cmp-lidar",
+      "mpn": "101990388",
+      "manufacturer": "Benewake",
+      "region": { "country": "CN", "market": "East Asia", "currency": "USD" },
+      "inputs": [
+        { "url": "https://www.seeedstudio.com/TFmini-Plus-LIDAR-Range-Finder-based-on-ToF-p-3222.html" }
+      ],
+      "contractVersion": "1.0.0",
+      "schedule": "45 */6 * * *",
+      "enabled": false,
+      "kind": "live",
+      "notes": "Manufacturer-region price, availability, volume pricing, and lifecycle signal."
+    },
+    {
+      "key": "controlled-supplier",
+      "name": "Controlled Supplier Fixture",
+      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "sourceId": "src-controlled",
+      "supplierId": "sup-controlled",
+      "componentId": "cmp-lidar",
+      "mpn": "TFMINI-PLUS-FIXTURE",
+      "manufacturer": "CANARY Reliability Lab",
+      "region": { "country": "US", "market": "Controlled fixture", "currency": "USD" },
+      "inputs": [],
+      "contractVersion": "1.0.0",
+      "schedule": null,
+      "enabled": false,
+      "kind": "controlled",
+      "notes": "Deterministic structural break fixture; activate only after its public URL is deployed."
     }
   ]
 }
