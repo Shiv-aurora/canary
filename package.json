@@ -9,5 +9,10 @@
     "test": "node --test",
     "check": "node --check server.mjs && node --check public/app.js && node --test"
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0"
+  }
 }
