@@ -5,7 +5,7 @@
     {
       "key": "robotshop-us-tfmini-plus",
       "name": "RobotShop US",
-      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "collectorId": "c_mt4sel7d12id86e88j",
       "sourceId": "src-robotshop-us",
       "supplierId": "sup-robotshop-us",
       "componentId": "cmp-lidar",
@@ -17,14 +17,14 @@
       ],
       "contractVersion": "1.0.0",
       "schedule": "0 6 * * *",
-      "enabled": false,
+      "enabled": true,
       "kind": "live",
-      "notes": "US regional price and exact unit inventory for the hero LiDAR component."
+      "notes": "Verified live on 2026-08-22: USD price, exact low-stock inventory, SKU, title, and canonical URL."
     },
     {
       "key": "botland-pl-tfmini-plus",
       "name": "Botland Poland",
-      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "collectorId": "c_mt4sss952nwlwy9s4w",
       "sourceId": "src-botland-pl",
       "supplierId": "sup-botland-pl",
       "componentId": "cmp-lidar",
@@ -36,14 +36,14 @@
       ],
       "contractVersion": "1.0.0",
       "schedule": "0 6 * * *",
-      "enabled": false,
+      "enabled": true,
       "kind": "live",
-      "notes": "EU price, exact quantity, shipping window, and replenishment lead time."
+      "notes": "Verified live on 2026-08-22: EUR price, temporary unavailability, delivery status, SKU, and canonical URL; exact inventory remains null when absent."
     },
     {
       "key": "cytron-my-tfmini-plus",
       "name": "Cytron Malaysia",
-      "collectorId": "c_PENDING_BRIGHT_DATA_AUTH",
+      "collectorId": "c_mt4t5babvzc5vkm31",
       "sourceId": "src-cytron-my",
       "supplierId": "sup-cytron-my",
       "componentId": "cmp-lidar",
@@ -57,7 +57,7 @@
       "schedule": "0 6 * * *",
       "enabled": false,
       "kind": "live",
-      "notes": "Southeast Asian lifecycle and availability signal; currently exposes discontinued status."
+      "notes": "Bright Data created this Collector ID on 2026-08-22, but generation timed out before a runnable template was produced. It remains disabled and cannot emit business observations."
     },
     {
       "key": "seeed-cn-tfmini-plus",
