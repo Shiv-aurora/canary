@@ -5,13 +5,16 @@ import { fileURLToPath } from "node:url";
 import { createSeed } from "./lib/seed.mjs";
 import { transitionSource } from "./lib/domain.mjs";
 import { BrightDataClient } from "./lib/bright-data.mjs";
+import { createObservationStore } from "./lib/store.mjs";
+import { IngestionService } from "./lib/ingestion.mjs";
 
 const root = fileURLToPath(new URL(".", import.meta.url));
 const publicRoot = join(root, "public");
 const port = Number(process.env.PORT || 3000);
 const brightData = new BrightDataClient();
 const collectorRegistry = JSON.parse(await readFile(join(root, "config", "collectors.json"), "utf8"));
-const allowedCollectorIds = new Set(collectorRegistry.collectors.filter(item => item.enabled).map(item => item.collectorId));
+const observationStore = await createObservationStore();
+const ingestion = new IngestionService({ client: brightData, store: observationStore, registry: collectorRegistry });
 const mutationHits = new Map();
 let state = createSeed();
 
@@ -76,10 +79,40 @@ const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
   });
 });
 
-function dashboard() {
+async function dashboard() {
+  const persisted = await observationStore.snapshot();
+  const liveObservations = persisted.observations.filter(item => item.provenance?.kind === "live");
+  const configuredSources = collectorRegistry.collectors.filter(item => item.kind === "live").map(collector => {
+    const health = persisted.sourceStates[collector.sourceId];
+    return {
+      key: collector.key,
+      id: collector.sourceId,
+      name: collector.name,
+      collectorId: collector.collectorId,
+      state: health?.state || "suspicious",
+      freshness: health?.lastAttemptAt ? new Date(health.lastAttemptAt).toLocaleString("en-US", { timeZone: "UTC" }) + " UTC" : "awaiting first run",
+      rows: health?.rows || 0,
+      kind: collector.enabled ? "live" : "planned",
+      region: collector.region,
+      contractVersion: collector.contractVersion,
+      errors: health?.errors || (collector.enabled ? [] : ["Collector ID pending Bright Data authentication"])
+    };
+  });
+  const sources = [...state.sources.filter(source => source.kind === "controlled"), ...configuredSources];
+  const liveInventory = liveObservations.filter(item => item.componentId === "cmp-lidar" && item.inventory != null).sort((a, b) => new Date(a.collectedAt) - new Date(b.collectedAt));
+  const trends = { ...state.trends, ...(liveInventory.length ? { "cmp-lidar": liveInventory.map(item => item.inventory) } : {}) };
+  const observations = [...state.observations, ...liveObservations];
+  const healingEvents = [...state.healingEvents, ...persisted.healingEvents];
   const critical = state.components.filter(c => c.severity === "critical").length;
-  const degraded = state.sources.filter(s => ["degraded", "healing"].includes(s.state)).length;
-  return { ...state, summary: { readiness: Math.max(0, 94 - critical * 18 - degraded * 12), critical, components: state.components.length, sourcesHealthy: state.sources.length - degraded } };
+  const degraded = sources.filter(s => ["degraded", "healing"].includes(s.state)).length;
+  const healthy = sources.filter(s => ["healthy", "recovered"].includes(s.state)).length;
+  return {
+    ...state,
+    meta: { ...state.meta, mode: liveObservations.length ? "mixed" : "seeded", brightDataConfigured: brightData.configured, persistence: observationStore.kind, liveObservationCount: liveObservations.length },
+    sources, trends, observations, healingEvents,
+    ingestionRuns: persisted.runs.slice(-20).reverse(),
+    summary: { readiness: Math.max(0, 94 - critical * 18 - degraded * 12), critical, components: state.components.length, sourcesHealthy: healthy }
+  };
 }
 
 export async function handleRequest(req, res) {
@@ -93,34 +126,37 @@ export async function handleRequest(req, res) {
       res.setHeader("Retry-After", "60");
       return json(res, 429, { error: "Too many mutation requests" });
     }
-    if (url.pathname === "/health") return json(res, 200, { status: "ok", service: "canary", brightDataConfigured: brightData.configured, now: new Date().toISOString() });
-    if (url.pathname === "/api/dashboard" && req.method === "GET") return json(res, 200, dashboard());
+    if (url.pathname === "/health") return json(res, 200, { status: "ok", service: "canary", brightDataConfigured: brightData.configured, persistence: observationStore.kind, now: new Date().toISOString() });
+    if (url.pathname === "/api/dashboard" && req.method === "GET") return json(res, 200, await dashboard());
+    if (url.pathname === "/api/ingestion/runs" && req.method === "GET") {
+      const persisted = await observationStore.snapshot(); return json(res, 200, { runs: persisted.runs.slice(-100).reverse(), sourceStates: persisted.sourceStates });
+    }
     if (url.pathname.startsWith("/api/components/") && req.method === "GET") {
       const id = decodeURIComponent(url.pathname.split("/").pop());
       const component = state.components.find(c => c.id === id);
       if (!component) return json(res, 404, { error: "Component not found" });
       return json(res, 200, { component, trend: state.trends[id] || [], observations: state.observations.filter(o => o.componentId === id), alternatives: state.alternatives.filter(a => a.componentId === id) });
     }
-    if (url.pathname === "/api/demo/reset" && req.method === "POST") { state = createSeed(); return json(res, 200, dashboard()); }
+    if (url.pathname === "/api/demo/reset" && req.method === "POST") { state = createSeed(); return json(res, 200, await dashboard()); }
     if (url.pathname === "/api/demo/degrade" && req.method === "POST") {
       const source = state.sources.find(s => s.id === "src-controlled");
       source.state = transitionSource("healthy", "invalid"); source.rows = 0; source.freshness = "now";
       state.healingEvents = [{ at: new Date().toISOString(), state: "degraded", title: "Extraction contract failed", detail: "Required inventory and MPN fields disappeared; no business observation was written" }];
-      return json(res, 200, dashboard());
+      return json(res, 200, await dashboard());
     }
     if (url.pathname === "/api/demo/heal" && req.method === "POST") {
       const source = state.sources.find(s => s.id === "src-controlled");
       if (source.state !== "degraded") return json(res, 409, { error: "Source must be degraded before healing" });
       source.state = transitionSource(source.state, "heal");
       state.healingEvents.push({ at: new Date().toISOString(), state: "healing", title: "Repair initiated", detail: `Repairing ${source.collectorId}; downstream schema remains v1.0.0` });
-      return json(res, 202, dashboard());
+      return json(res, 202, await dashboard());
     }
     if (url.pathname === "/api/demo/verify" && req.method === "POST") {
       const source = state.sources.find(s => s.id === "src-controlled");
       if (source.state !== "healing") return json(res, 409, { error: "Source must be healing before verification" });
       source.state = transitionSource(source.state, "verified"); source.rows = 8; source.freshness = "now";
       state.healingEvents.push({ at: new Date().toISOString(), state: "recovered", title: "Recovery verified", detail: `8/8 records passed contract v1.0.0; ${source.collectorId} unchanged` });
-      return json(res, 200, dashboard());
+      return json(res, 200, await dashboard());
     }
     if (url.pathname === "/api/collectors/run" && req.method === "POST") {
       if (!req.headers["content-type"]?.toLowerCase().startsWith("application/json")) {
@@ -128,10 +164,25 @@ export async function handleRequest(req, res) {
       }
       if (!brightData.configured) return json(res, 503, { error: "Bright Data is not configured", action: "Set BRIGHT_DATA_API_TOKEN and replace the collector ID in config/collectors.json" });
       const input = await body(req);
-      if (!allowedCollectorIds.has(input.collectorId)) return json(res, 403, { error: "Collector is not enabled in the registry" });
       const inputs = input.inputs ?? [];
       if (!areSafeCollectorInputs(inputs)) return json(res, 400, { error: "Collector inputs must be a bounded array of scalar records" });
-      const run = await brightData.triggerCollector(input.collectorId, inputs); return json(res, 202, run);
+      const result = await ingestion.collect(input.collectorKey || input.collectorId, { inputs: inputs.length ? inputs : undefined, trigger: "command-center" });
+      return json(res, 200, result);
+    }
+    if (url.pathname === "/api/collectors/heal" && req.method === "POST") {
+      if (!req.headers["content-type"]?.toLowerCase().startsWith("application/json")) return json(res, 415, { error: "Content-Type must be application/json" });
+      if (!brightData.configured) return json(res, 503, { error: "Bright Data is not configured" });
+      const input = await body(req);
+      if (typeof input.prompt !== "string" || input.prompt.length < 10 || input.prompt.length > 1000) return json(res, 400, { error: "A specific healing prompt between 10 and 1000 characters is required" });
+      const result = await ingestion.heal(input.collectorKey || input.collectorId, input.prompt); return json(res, 200, result);
+    }
+    if (url.pathname === "/api/cron/ingest" && req.method === "GET") {
+      const expected = process.env.CRON_SECRET;
+      if (!expected || req.headers.authorization !== `Bearer ${expected}`) return json(res, expected ? 401 : 503, { error: expected ? "Unauthorized" : "CRON_SECRET is not configured" });
+      if (!brightData.configured) return json(res, 503, { error: "Bright Data is not configured" });
+      const enabled = collectorRegistry.collectors.filter(item => item.enabled && item.kind === "live");
+      const results = await Promise.allSettled(enabled.map(item => ingestion.collect(item.key, { trigger: "schedule" })));
+      return json(res, 200, { attempted: enabled.length, completed: results.filter(item => item.status === "fulfilled").length, failed: results.filter(item => item.status === "rejected").length });
     }
     if (req.method !== "GET") return json(res, 404, { error: "Not found" });
     const relative = url.pathname === "/" ? "index.html" : decodeURIComponent(url.pathname.slice(1));

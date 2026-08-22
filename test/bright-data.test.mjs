@@ -27,3 +27,11 @@ test("upstream response bodies are not copied into thrown errors", async () => {
     globalThis.fetch = originalFetch;
   }
 });
+
+test("Scraper Studio collectors use the c_* collection API", async () => {
+  const client = new BrightDataClient({ token: "test" });
+  client.request = async (path, options) => ({ path, options });
+  const result = await client.triggerCollector("c_live", [{ url: "https://example.com" }]);
+  assert.match(result.path, /^\/dca\/trigger\?collector=c_live/);
+  assert.equal(result.options.method, "POST");
+});
