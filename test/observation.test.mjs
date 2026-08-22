@@ -27,6 +27,49 @@ test("missing extraction never becomes a zero-stock observation", () => {
   assert.match(result.errors.join(" "), /no usable supply signal/);
 });
 
+test("normalizes verified RobotShop Scraper Studio output without changing the contract", () => {
+  const liveCollector = {
+    ...collector,
+    collectorId: "c_mt4sel7d12id86e88j",
+    sourceId: "src-robotshop-us",
+    supplierId: "sup-robotshop-us",
+    region: { country: "US", currency: "USD" },
+    inputs: [{ url: "https://www.robotshop.com/products/benewake-tfmini-plus-micro-lidar-module-uart-i2c-12-m" }]
+  };
+  const observation = normalizeObservation({
+    product_title: "Benewake TFMINI Plus Micro LIDAR Module UART/I2C (12 m)",
+    price: { value: 52, currency: "USD", symbol: "$" },
+    stock: "Only 1 unit left",
+    sku: "RB-Ben-09",
+    url: liveCollector.inputs[0].url
+  }, liveCollector, { runId: "d2t1787428348263rrec7adncgho", collectedAt: "2026-08-22T12:00:00.000Z" });
+
+  assert.equal(observation.title, "Benewake TFMINI Plus Micro LIDAR Module UART/I2C (12 m)");
+  assert.deepEqual(observation.price, { amount: 52, currency: "USD" });
+  assert.equal(observation.inventory, 1);
+  assert.equal(observation.availability, "low_stock");
+  assert.equal(observation.provenance.rawEvidence, "Only 1 unit left");
+  assert.equal(validateLiveObservation(observation).valid, true);
+});
+
+test("normalizes verified Botland output without inventing unavailable inventory", () => {
+  const observation = normalizeObservation({
+    product_title: "Laser distance sensor Lidar TFMini Plus UART / I2C - 12m",
+    price: { value: 49.5, currency: "EUR", symbol: "€" },
+    availability_text: "No scheduled delivery",
+    stock_status: "Temporarily unavailable",
+    shipping_text: "Free shipping Shipping from 6,50 EUR",
+    sku: "BEN-13634",
+    canonical_source_url: "https://botland.store/time-of-flight-sensor/13634-laser-distance-sensor-lidar-tfmini-plus-uart-i2c-12m-5903351249089.html"
+  }, collector, { runId: "d2t1787428966956ruc7ijl8u93g", collectedAt: "2026-08-22T12:00:00.000Z" });
+
+  assert.deepEqual(observation.price, { amount: 49.5, currency: "EUR" });
+  assert.equal(observation.inventory, null);
+  assert.equal(observation.availability, "out_of_stock");
+  assert.equal(observation.provenance.rawEvidence, "No scheduled delivery");
+  assert.equal(validateLiveObservation(observation).valid, true);
+});
+
 test("empty and schema-invalid collector runs are degraded", () => {
   assert.equal(assessCollection([], collector).state, "degraded");
   const result = assessCollection([{ title: "Redesigned page without supply fields" }], collector, { runId: "j_bad" });
