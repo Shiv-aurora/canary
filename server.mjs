@@ -150,6 +150,8 @@ export async function handleRequest(req, res) {
   }
 }
 
+export default handleRequest;
+
 if (!process.env.VERCEL) {
   const server = http.createServer(handleRequest);
   server.listen(port, () => console.log(`CANARY listening on http://localhost:${port}`));
