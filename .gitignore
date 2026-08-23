@@ -2,6 +2,7 @@
 .env.*
 !.env.example
 *.md
+!README.md
 .playwright-mcp/
 .playwright-cli/
 output/
