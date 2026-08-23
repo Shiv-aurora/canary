@@ -18,6 +18,14 @@ function renderSummary() {
   if($("#landing-product-count")) $("#landing-product-count").textContent=`${number(currentProducts)} products`;
   if($("#landing-live-count")) $("#landing-live-count").textContent=`${number(currentProducts)} current products`;
   if($("#landing-observation-count")) $("#landing-observation-count").textContent=`${number(data.meta?.liveObservationCount||0)} live observations`;
+  const liveObservations=(data.observations||[]).filter(item=>item.provenance?.kind==="live");
+  [{key:"robotshop",sourceId:"src-robotshop-us",country:"United States"},{key:"botland",sourceId:"src-botland-pl",country:"Poland"}].forEach(({key,sourceId,country})=>{
+    const source=data.sources.find(item=>item.id===sourceId),count=new Set(liveObservations.filter(item=>item.sourceId===sourceId).map(item=>item.provenance?.url).filter(Boolean)).size,state=source?.state||"suspicious";
+    if($(`#landing-${key}-count`)) $(`#landing-${key}-count`).textContent=`${number(count)} current`;
+    if($(`#landing-${key}-state`)) $(`#landing-${key}-state`).textContent=state;
+    if($(`#landing-${key}-globe-state`)) $(`#landing-${key}-globe-state`).textContent=`${country} · ${number(count)} current · ${state}`;
+    [$(`#landing-${key}-card`),$(`#landing-${key}-globe`)].filter(Boolean).forEach(element=>{element.classList.remove("healthy","recovered","degraded","healing","suspicious");element.classList.add(state)});
+  });
 }
 function renderRisks() {
   $("#risk-list").innerHTML = [...data.components].sort((a,b) => b.score-a.score).map(c => `<button class="risk-card ${c.id===selected?"active":""}" data-component="${escapeHtml(c.id)}"><i class="risk-bar" style="background:${colors[c.severity] || colors.low}"></i><div><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.mpn)} · ${escapeHtml(c.assembly)}</p></div><strong>${escapeHtml(c.score)}<small>/100</small></strong></button>`).join("");
