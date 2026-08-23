@@ -76,7 +76,7 @@ function renderTimeline(){
   $("#timeline").innerHTML=events.map(event=>{const state=states.has(event.state)?event.state:"degraded";return `<article class="event ${state}"><span>${escapeHtml(state)}</span><h3>${escapeHtml(event.title)}</h3><p>${escapeHtml(event.detail)}</p><time>${escapeHtml(new Date(event.at||event.startedAt).toLocaleString())}</time></article>`}).join("");
 }
 function render(){renderSummary();renderRisks();renderDetail();renderSources();renderCatalog();renderRuns();renderTimeline()}
-function navigate(view){ const target=$(`#view-${view}`),nav=$(`.nav-item[data-view='${view}']`); if(!target||!nav)return; $$(".view,.nav-item").forEach(x=>x.classList.remove("active")); target.classList.add("active"); nav.classList.add("active"); $("#page-title").textContent={command:"Production overview",sources:"Live supplier data",healing:"Verified recovery"}[view]; window.scrollTo(0,0); }
+function navigate(view){ const target=$(`#view-${view}`),nav=$(`.nav-item[data-view='${view}']`); if(!target||!nav)return; $$(".view,.nav-item").forEach(x=>x.classList.remove("active")); target.classList.add("active"); nav.classList.add("active"); $("#page-title").textContent={command:"Dashboard",sources:"Supplier Data",healing:"How CANARY Recovers"}[view]; window.scrollTo(0,0); }
 $$('[data-view]').forEach(b=>b.onclick=()=>navigate(b.dataset.view));
 $$('[data-impact]').forEach(button=>button.onclick=()=>$("#production-impact").scrollIntoView({behavior:"smooth",block:"center"}));
 const stages=[
@@ -91,9 +91,13 @@ const signalCopy={product:["Build readiness is 76/100.","One critical component 
 $$('[data-signal]').forEach(el=>el.onclick=()=>{$$('[data-signal]').forEach(n=>n.classList.remove("active"));el.classList.add("active");const copy=signalCopy[el.dataset.signal];$(".note-a span").innerHTML=`${copy[0]}<b>${copy[1]}</b>`});
 $$('[data-scroll]').forEach(el=>el.onclick=()=>document.getElementById(el.dataset.scroll).scrollIntoView({behavior:"smooth"}));
 $("#mobile-menu").onclick=()=>{const open=$("#mobile-links").classList.toggle("open");$("#mobile-menu").setAttribute("aria-expanded",open)};
-function showApp(){$("#landing").hidden=true;$("#app-shell").hidden=false;document.body.style.overflow="";window.scrollTo(0,0);if(data){render();renderDetail()}}
-function showLanding(){$("#landing").hidden=false;$("#app-shell").hidden=true;window.scrollTo(0,0)}
-$$('.enter-app').forEach(el=>el.onclick=()=>{history.pushState(null,"","#app");showApp()});
+let contextShown=false;
+function openContext(){const modal=$("#context-modal");modal.hidden=false;document.body.style.overflow="hidden";setTimeout(()=>$("#context-start").focus(),0)}
+function closeContext(){$("#context-modal").hidden=true;document.body.style.overflow=""}
+function showApp(){$("#landing").hidden=true;$("#app-shell").hidden=false;document.body.style.overflow="";window.scrollTo(0,0);if(data){render();renderDetail()}if(!contextShown){contextShown=true;openContext()}}
+function showLanding(){closeContext();contextShown=false;$("#landing").hidden=false;$("#app-shell").hidden=true;window.scrollTo(0,0)}
+$$('[data-close-context]').forEach(button=>button.onclick=closeContext);$("#context-start").onclick=closeContext;window.addEventListener("keydown",event=>{if(event.key==="Escape"&&!$("#context-modal").hidden)closeContext()});
+$$('.enter-app').forEach(el=>el.onclick=()=>{history.pushState(null,"","#app");showApp();navigate("command")});
 $$('[data-open-view]').forEach(el=>el.onclick=()=>{history.pushState(null,"","#app");showApp();navigate(el.dataset.openView)});
 $(".back-home").onclick=()=>{history.pushState(null,"","#home");showLanding()};
 window.addEventListener("hashchange",()=>location.hash==="#app"?showApp():location.hash==="#home"&&showLanding());
