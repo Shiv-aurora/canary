@@ -11,13 +11,17 @@ function renderSummary() {
   $("#product-name").textContent = `${data.product.name} · ${data.product.sku}`;
   $("#readiness-score").textContent = data.summary.readiness;
   $("#score-ring").style.background = `radial-gradient(circle,#101e19 57%,transparent 59%),conic-gradient(${data.summary.readiness < 75 ? "var(--red)" : "var(--green)"} 0 ${data.summary.readiness}%,#28342f ${data.summary.readiness}%)`;
-  $("#critical-count").textContent = data.summary.critical; $("#component-count").textContent = data.summary.components; $("#healthy-count").textContent = `${data.summary.sourcesHealthy}/${data.sources.length}`;
+  const liveSources=data.sources.filter(source=>source.kind==="live"),healthyLiveSources=liveSources.filter(source=>["healthy","recovered"].includes(source.state));
+  $("#critical-count").textContent = data.summary.critical; $("#component-count").textContent = data.summary.components; $("#healthy-count").textContent = `${healthyLiveSources.length}/${liveSources.length}`;
   const mode=data.meta?.mode==="mixed"?`${number(data.meta.liveObservationCount)} live observations`:data.meta?.brightDataConfigured?"Bright Data ready · awaiting first run":"Seeded intelligence · live setup pending";
   $("#data-mode").lastChild.textContent=` ${mode}`; $("#data-mode").classList.toggle("live",data.meta?.mode==="mixed");
   const currentProducts=new Set((data.observations||[]).filter(item=>item.provenance?.kind==="live").map(item=>item.provenance?.url).filter(Boolean)).size;
   if($("#landing-product-count")) $("#landing-product-count").textContent=`${number(currentProducts)} products`;
   if($("#landing-live-count")) $("#landing-live-count").textContent=`${number(currentProducts)} current products`;
   if($("#landing-observation-count")) $("#landing-observation-count").textContent=`${number(data.meta?.liveObservationCount||0)} live observations`;
+  const previewCards=$$(".stat-card"),previewProducts=previewCards.find(card=>card.querySelector("span")?.textContent==="Live products"),previewSources=previewCards.find(card=>card.querySelector("span")?.textContent==="Healthy sources");
+  if(previewProducts) previewProducts.querySelector("strong").textContent=number(currentProducts);
+  if(previewSources){previewSources.querySelector("strong").textContent=`${healthyLiveSources.length}/${liveSources.length}`;previewSources.querySelector("small").textContent="Live collectors healthy now";}
   const liveObservations=(data.observations||[]).filter(item=>item.provenance?.kind==="live");
   [{key:"robotshop",sourceId:"src-robotshop-us",country:"United States"},{key:"botland",sourceId:"src-botland-pl",country:"Poland"}].forEach(({key,sourceId,country})=>{
     const source=data.sources.find(item=>item.id===sourceId),count=new Set(liveObservations.filter(item=>item.sourceId===sourceId).map(item=>item.provenance?.url).filter(Boolean)).size,state=source?.state||"suspicious";
@@ -43,14 +47,16 @@ function renderDetail() {
   const c=data.components.find(x=>x.id===selected), trend=data.trends[selected]||[];
   $("#detail-name").textContent=c.name; $("#detail-mpn").textContent=c.mpn; $("#detail-assembly").textContent=c.assembly; $("#detail-severity").textContent=c.severity; $("#detail-severity").className=`severity ${c.severity}`; $("#current-stock").textContent=number(c.inventory); $("#trend-chart").innerHTML='<canvas aria-label="Inventory trend"></canvas>'; drawSparkline($("#trend-chart canvas"),trend);
   $("#risk-factors").innerHTML=`<div class="factor"><span>Lead time</span><b>${escapeHtml(c.leadTimeDays)} days</b></div><div class="factor"><span>Supplier coverage</span><b>${escapeHtml(c.supplierCount)} source${c.supplierCount===1?"":"s"}</b></div><div class="factor"><span>Source confidence</span><b>${escapeHtml(Math.round(c.sourceConfidence*100))}%</b></div>`;
+  renderImpact(c);
 }
-function edge(x1,y1,x2,y2){const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),angle=Math.atan2(dy,dx)*180/Math.PI;return `<i class="edge" style="left:${x1}%;top:${y1}%;width:${len}%;transform:rotate(${angle}deg)"></i>`}
-function renderGraph() {
-  const c=data.components.find(x=>x.id===selected),severity=Object.hasOwn(colors,c.severity)?c.severity:"low"; const nodes=[["product",20,50,data.product.name],["assembly",48,30,c.assembly],[`component ${severity}`,70,30,c.name],["supplier",88,17,"Northstar Components"],["supplier",88,43,"Vector Optics"],["assembly",48,70,"Compute + Power"],["component",70,70,"4 other components"]];
-  $("#bom-graph").innerHTML=edge(20,50,48,30)+edge(48,30,70,30)+edge(70,30,88,17)+edge(70,30,88,43)+edge(20,50,48,70)+edge(48,70,70,70)+nodes.map(n=>`<button class="node ${n[0]}" style="left:${n[1]}%;top:${n[2]}%">${escapeHtml(n[3])}</button>`).join("");
-  const alts=data.alternatives.filter(a=>a.componentId===selected); $("#graph-inspector").innerHTML=`<p class="eyebrow">SELECTED EXPOSURE</p><h3>${escapeHtml(c.name)}</h3><p>A shortage blocks <b>${escapeHtml(data.product.name)}</b> through <b>${escapeHtml(c.assembly)}</b>. There is no approved drop-in replacement.</p><p class="eyebrow">POSSIBLE ALTERNATIVES</p><ul>${alts.length?alts.map(a=>`<li>${escapeHtml(a.mpn)} · ${escapeHtml(Math.round(a.confidence*100))}% evidence confidence</li>`).join(""):"<li>No evidence-backed candidates</li>"}</ul>`;
+function renderImpact(c) {
+  const alternatives=data.alternatives.filter(item=>item.componentId===c.id);
+  $("#impact-component").textContent=c.name; $("#impact-assembly").textContent=c.assembly;
+  $("#impact-title").textContent=`The ${c.assembly.toLowerCase()}—and the entire rover build.`;
+  $("#impact-summary").textContent=`A shortage in ${c.name} blocks ${c.assembly}, which puts the next ${data.product.name} production run at risk.`;
+  $("#impact-alternatives").textContent=alternatives.length?`${alternatives.length} possible alternative${alternatives.length===1?"":"s"} require engineering review`:"No evidence-backed alternative is currently available";
 }
-function renderSources(){ const states=new Set(["healthy","suspicious","degraded","healing","recovered"]); $("#source-grid").innerHTML=data.sources.map(s=>{const state=states.has(s.state)?s.state:"suspicious",region=s.region?`${s.region.country} · ${s.region.market}`:"Controlled fixture",canRun=s.kind==="live"&&data.meta?.brightDataConfigured;return `<article class="panel source-card"><header><div><h3>${escapeHtml(s.name)}</h3><code>${escapeHtml(s.collectorId)}</code></div><span class="state ${state}">● ${escapeHtml(state)}</span></header><p class="source-region">${escapeHtml(region)}</p><div class="source-stats"><span>Freshness<b>${escapeHtml(s.freshness)}</b></span><span>Rows<b>${escapeHtml(s.rows)}</b></span><span>Evidence<b>${escapeHtml(s.kind)}</b></span></div>${s.errors?.length?`<p class="source-error">${escapeHtml(s.errors[0])}</p>`:""}${canRun?`<button class="source-run" data-run-collector="${escapeHtml(s.key)}">Collect now</button>`:""}</article>`}).join(""); $$('[data-run-collector]').forEach(button=>button.onclick=()=>runCollector(button)); }
+function renderSources(){ const states=new Set(["healthy","suspicious","degraded","healing","recovered"]),liveSources=data.sources.filter(source=>source.kind==="live"); $("#source-grid").innerHTML=liveSources.map(s=>{const state=states.has(s.state)?s.state:"suspicious",region=s.region?`${s.region.country} · ${s.region.market}`:"Unknown region",canRun=data.meta?.brightDataConfigured;return `<article class="panel source-card"><header><div><h3>${escapeHtml(s.name)}</h3><code>${escapeHtml(s.collectorId)}</code></div><span class="state ${state}">● ${escapeHtml(state)}</span></header><p class="source-region">${escapeHtml(region)}</p><div class="source-stats"><span>Last result<b>${escapeHtml(s.freshness)}</b></span><span>Valid rows<b>${escapeHtml(s.rows)}</b></span><span>Collection<b>Live</b></span></div>${s.errors?.length?`<p class="source-error">${escapeHtml(s.errors[0])}</p>`:""}${canRun?`<button class="source-run" data-run-collector="${escapeHtml(s.key)}">Collect now</button>`:""}</article>`}).join(""); $$('[data-run-collector]').forEach(button=>button.onclick=()=>runCollector(button)); }
 function renderCatalog(){
   const sourceNames=Object.fromEntries(data.sources.map(source=>[source.id,source.name]));
   const latest=new Map();
@@ -61,14 +67,18 @@ function renderCatalog(){
 }
 function renderRuns(){ $("#persistence-mode").textContent=`${data.meta?.persistence||"unknown"} persistence`; const runs=data.ingestionRuns||[]; $("#run-list").innerHTML=runs.length?runs.map(run=>`<article class="run-row"><span class="run-status ${escapeHtml(run.status)}">${escapeHtml(run.status)}</span><div><b>${escapeHtml(run.sourceId)}</b><small>${escapeHtml(run.snapshotId||run.id)} · ${escapeHtml(run.region?.country||"—")}</small></div><strong>${escapeHtml(run.validRows||0)}/${escapeHtml(run.rows||0)} rows</strong><time>${escapeHtml(new Date(run.finishedAt||run.startedAt).toLocaleString())}</time></article>`).join(""):'<div class="empty-run"><b>No live collection has run yet.</b><span>Once Bright Data is authenticated, every snapshot and validation result appears here.</span></div>'; }
 async function runCollector(button){button.disabled=true;button.textContent="Collecting…";try{await api("/api/collectors/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({collectorKey:button.dataset.runCollector})});data=await api("/api/dashboard");render();toast("Live observation collected and persisted")}catch(e){toast(e.message)}finally{button.disabled=false;button.textContent="Collect now"}}
-function renderTimeline(){ const latest=[...data.healingEvents].reverse().find(e=>e.collectorId),source=latest?data.sources.find(s=>s.id===latest.sourceId):data.sources.find(s=>s.id==="src-controlled"),states=new Set(["degraded","healing","recovered"]); $("#continuity-id").textContent=source?.collectorId||latest?.collectorId||"—"; $("#timeline").innerHTML=data.healingEvents.map(e=>{const state=states.has(e.state)?e.state:"degraded";return `<article class="event ${state}"><h3>${escapeHtml(e.title)}</h3><p>${escapeHtml(e.detail)}</p><time>${escapeHtml(new Date(e.at||e.startedAt).toLocaleString())}</time></article>`}).join(""); }
-function render(){renderSummary();renderRisks();renderDetail();renderGraph();renderSources();renderCatalog();renderRuns();renderTimeline()}
-function navigate(view){ $$(".view,.nav-item").forEach(x=>x.classList.remove("active")); $(`#view-${view}`).classList.add("active"); $(`.nav-item[data-view='${view}']`).classList.add("active"); $("#page-title").textContent={command:"Command center",graph:"BOM intelligence",sources:"Source health",healing:"Self-healing lab"}[view]; }
-$$('[data-view]').forEach(b=>b.onclick=()=>navigate(b.dataset.view)); $$('[data-nav]').forEach(b=>b.onclick=()=>navigate(b.dataset.nav));
-$("#reset").onclick=async()=>{data=await api("/api/demo/reset",{method:"POST"});render();toast("Demo reset")};
-$("#degrade").onclick=async()=>{try{data=await api("/api/demo/degrade",{method:"POST"});render();toast("Contract failure detected — observation quarantined")}catch(e){toast(e.message)}};
-$("#heal").onclick=async()=>{try{data=await api("/api/demo/heal",{method:"POST"});render();toast("Healing started on the same collector")}catch(e){toast(e.message)}};
-$("#verify").onclick=async()=>{try{data=await api("/api/demo/verify",{method:"POST"});render();toast("Recovery verified — contract restored")}catch(e){toast(e.message)}};
+function renderTimeline(){
+  const source=data.sources.find(s=>s.id==="src-botland-pl"),events=data.healingEvents.filter(event=>event.sourceId===source?.id),states=new Set(["degraded","healing","recovered"]),degraded=events.find(event=>event.state==="degraded"),recovered=[...events].reverse().find(event=>event.state==="recovered"),snapshot=detail=>(detail||"").match(/j_[a-z0-9]+/i)?.[0];
+  $("#continuity-id").textContent=source?.collectorId||events[0]?.collectorId||"—";
+  $("#recovery-row-count").textContent=recovered?.detail.match(/\d+\/\d+/)?.[0]||"Verified";
+  $("#degraded-snapshot").textContent=snapshot(degraded?.detail)||"Invalid snapshot detected";
+  $("#recovered-snapshot").textContent=snapshot(recovered?.detail)||"Valid snapshot restored";
+  $("#timeline").innerHTML=events.map(event=>{const state=states.has(event.state)?event.state:"degraded";return `<article class="event ${state}"><span>${escapeHtml(state)}</span><h3>${escapeHtml(event.title)}</h3><p>${escapeHtml(event.detail)}</p><time>${escapeHtml(new Date(event.at||event.startedAt).toLocaleString())}</time></article>`}).join("");
+}
+function render(){renderSummary();renderRisks();renderDetail();renderSources();renderCatalog();renderRuns();renderTimeline()}
+function navigate(view){ const target=$(`#view-${view}`),nav=$(`.nav-item[data-view='${view}']`); if(!target||!nav)return; $$(".view,.nav-item").forEach(x=>x.classList.remove("active")); target.classList.add("active"); nav.classList.add("active"); $("#page-title").textContent={command:"Production overview",sources:"Live supplier data",healing:"Verified recovery"}[view]; window.scrollTo(0,0); }
+$$('[data-view]').forEach(b=>b.onclick=()=>navigate(b.dataset.view));
+$$('[data-impact]').forEach(button=>button.onclick=()=>$("#production-impact").scrollIntoView({behavior:"smooth",block:"center"}));
 const stages=[
   {state:"Degraded",title:"The field disappeared. CANARY noticed.",detail:"The invalid manufacturer field was treated as a source-health incident, never as trusted supply data.",metric:"0 false facts"},
   {state:"Healing",title:"Bright Data repaired the collector in place.",detail:"The planner, code-fixer, preview runner, and fulfillment validator completed without replacing the collector.",metric:"Same c_* ID"},
