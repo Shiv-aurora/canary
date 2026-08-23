@@ -82,6 +82,31 @@ const body = (req, limitBytes = 64 * 1024) => new Promise((resolve, reject) => {
 async function dashboard() {
   const persisted = await observationStore.snapshot();
   const liveObservations = persisted.observations.filter(item => item.provenance?.kind === "live");
+  const configuredCatalog = collectorRegistry.collectors
+    .filter(collector => collector.enabled && collector.kind === "live")
+    .flatMap(collector => (collector.inputs || []).map((input, index) => {
+      const slug = new URL(input.url).pathname.split("/").filter(Boolean).at(-1)
+        ?.replace(/\.html$/i, "").replace(/-\d{9,}$/i, "").replace(/-/g, " ");
+      const title = (slug || `${input.manufacturer || "Hardware"} product`)
+        .replace(/\b\w/g, character => character.toUpperCase());
+      return {
+        id: `configured-${collector.key}-${index + 1}`,
+        title,
+        componentId: input.componentId,
+        manufacturer: input.manufacturer || null,
+        supplierId: collector.supplierId,
+        sourceId: collector.sourceId,
+        availability: "configured",
+        price: null,
+        inventory: null,
+        provenance: {
+          url: input.url,
+          collectorId: collector.collectorId,
+          kind: "configured",
+          region: collector.region?.country || "unknown"
+        }
+      };
+    }));
   const configuredSources = collectorRegistry.collectors.filter(item => item.kind === "live").map(collector => {
     const health = persisted.sourceStates[collector.sourceId];
     return {
@@ -90,8 +115,10 @@ async function dashboard() {
       name: collector.name,
       collectorId: collector.collectorId,
       state: health?.state || "suspicious",
+      hasRun: Boolean(health),
       freshness: health?.lastAttemptAt ? new Date(health.lastAttemptAt).toLocaleString("en-US", { timeZone: "UTC" }) + " UTC" : "awaiting first run",
       rows: health?.rows || 0,
+      configuredInputs: collector.inputs?.length || 0,
       kind: collector.enabled ? "live" : "planned",
       region: collector.region,
       contractVersion: collector.contractVersion,
@@ -122,7 +149,7 @@ async function dashboard() {
   return {
     ...state,
     meta: { ...state.meta, mode: liveObservations.length ? "mixed" : "seeded", brightDataConfigured: brightData.configured, persistence: observationStore.kind, liveObservationCount: liveObservations.length },
-    sources, trends, observations, healingEvents,
+    sources, trends, observations, healingEvents, configuredCatalog,
     ingestionRuns: persisted.runs.slice(-20).reverse(),
     summary: { readiness: Math.max(0, 94 - critical * 18 - degraded * 12), critical, components: state.components.length, sourcesHealthy: healthy }
   };
