@@ -14,6 +14,10 @@ function renderSummary() {
   $("#critical-count").textContent = data.summary.critical; $("#component-count").textContent = data.summary.components; $("#healthy-count").textContent = `${data.summary.sourcesHealthy}/${data.sources.length}`;
   const mode=data.meta?.mode==="mixed"?`${number(data.meta.liveObservationCount)} live observations`:data.meta?.brightDataConfigured?"Bright Data ready · awaiting first run":"Seeded intelligence · live setup pending";
   $("#data-mode").lastChild.textContent=` ${mode}`; $("#data-mode").classList.toggle("live",data.meta?.mode==="mixed");
+  const currentProducts=new Set((data.observations||[]).filter(item=>item.provenance?.kind==="live").map(item=>item.provenance?.url).filter(Boolean)).size;
+  if($("#landing-product-count")) $("#landing-product-count").textContent=`${number(currentProducts)} products`;
+  if($("#landing-live-count")) $("#landing-live-count").textContent=`${number(currentProducts)} current products`;
+  if($("#landing-observation-count")) $("#landing-observation-count").textContent=`${number(data.meta?.liveObservationCount||0)} live observations`;
 }
 function renderRisks() {
   $("#risk-list").innerHTML = [...data.components].sort((a,b) => b.score-a.score).map(c => `<button class="risk-card ${c.id===selected?"active":""}" data-component="${escapeHtml(c.id)}"><i class="risk-bar" style="background:${colors[c.severity] || colors.low}"></i><div><h3>${escapeHtml(c.name)}</h3><p>${escapeHtml(c.mpn)} · ${escapeHtml(c.assembly)}</p></div><strong>${escapeHtml(c.score)}<small>/100</small></strong></button>`).join("");
@@ -58,9 +62,9 @@ $("#degrade").onclick=async()=>{try{data=await api("/api/demo/degrade",{method:"
 $("#heal").onclick=async()=>{try{data=await api("/api/demo/heal",{method:"POST"});render();toast("Healing started on the same collector")}catch(e){toast(e.message)}};
 $("#verify").onclick=async()=>{try{data=await api("/api/demo/verify",{method:"POST"});render();toast("Recovery verified — contract restored")}catch(e){toast(e.message)}};
 const stages=[
-  {state:"Degraded",title:"The source changed. CANARY noticed.",detail:"Missing inventory is quarantined as a data-quality incident—not recorded as zero stock.",metric:"0 false stockouts"},
-  {state:"Exposed",title:"The dependency graph reveals the impact.",detail:"Four assemblies and the Atlas Delivery Rover inherit the LiDAR shortage risk immediately.",metric:"4 assemblies"},
-  {state:"Recovered",title:"The collector heals without breaking the product.",detail:"The same Collector ID returns to contract v1.0.0 and every downstream view keeps working.",metric:"96% confidence"}
+  {state:"Degraded",title:"The field disappeared. CANARY noticed.",detail:"The invalid manufacturer field was treated as a source-health incident, never as trusted supply data.",metric:"0 false facts"},
+  {state:"Healing",title:"Bright Data repaired the collector in place.",detail:"The planner, code-fixer, preview runner, and fulfillment validator completed without replacing the collector.",metric:"Same c_* ID"},
+  {state:"Recovered",title:"The stable contract passed again.",detail:"Manufacturer returned as Arduino and the complete Botland catalog passed post-heal validation.",metric:"12 / 12 rows"}
 ];
 let activeStage=0;
 function selectStage(index){activeStage=(index+stages.length)%stages.length;$$('[data-stage]').forEach((el,i)=>{el.classList.toggle("active",i===activeStage);el.setAttribute("aria-selected",i===activeStage)});const s=stages[activeStage];$("#stage-state").textContent=s.state;$("#stage-state").style.color=activeStage===0?"var(--red)":activeStage===1?"var(--blue)":"var(--green)";$("#stage-title").textContent=s.title;$("#stage-detail").textContent=s.detail;$("#stage-metric").textContent=s.metric}
@@ -72,6 +76,7 @@ $("#mobile-menu").onclick=()=>{const open=$("#mobile-links").classList.toggle("o
 function showApp(){$("#landing").hidden=true;$("#app-shell").hidden=false;document.body.style.overflow="";window.scrollTo(0,0);if(data){render();renderDetail()}}
 function showLanding(){$("#landing").hidden=false;$("#app-shell").hidden=true;window.scrollTo(0,0)}
 $$('.enter-app').forEach(el=>el.onclick=()=>{history.pushState(null,"","#app");showApp()});
+$$('[data-open-view]').forEach(el=>el.onclick=()=>{history.pushState(null,"","#app");showApp();navigate(el.dataset.openView)});
 $(".back-home").onclick=()=>{history.pushState(null,"","#home");showLanding()};
 window.addEventListener("hashchange",()=>location.hash==="#app"?showApp():location.hash==="#home"&&showLanding());
 api("/api/dashboard").then(value=>{data=value;render();if(location.hash==="#app")showApp()}).catch(e=>toast(e.message));
