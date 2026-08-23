@@ -52,7 +52,7 @@ CANARY exercised that full workflow against the live Botland collector when its 
 
 ## How it works
 
-![CANARY system architecture: supplier sources, Bright Data Scraper Studio, validation, Neon history, Command Center, and same-collector recovery loop](public/assets/canary-architecture.svg)
+![CANARY system architecture: supplier sources, Bright Data Scraper Studio, validation, Neon history, Command Center, and same-collector recovery loop](public/assets/canary-architecture.png)
 
 The normalized contract remains stable even when the source website and extraction logic change:
 
