@@ -52,20 +52,7 @@ CANARY exercised that full workflow against the live Botland collector when its 
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A[Regional supplier pages] --> B[Bright Data<br/>Scraper Studio]
-    B --> C[CANARY ingestion API]
-    C --> D{Validate output}
-    D -->|valid| E[Normalize to schema v1]
-    E --> F[(Neon Postgres)]
-    F --> G[Supply history and risk engine]
-    G --> H[Command Center]
-    D -->|degraded| I[Source-health incident]
-    I --> J[Bright Data refactor]
-    J --> K[Verify same Collector ID]
-    K --> D
-```
+![CANARY system architecture: supplier sources, Bright Data Scraper Studio, validation, Neon history, Command Center, and same-collector recovery loop](public/assets/canary-architecture.svg)
 
 The normalized contract remains stable even when the source website and extraction logic change:
 

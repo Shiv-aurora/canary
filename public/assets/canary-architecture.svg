@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" role="img" aria-labelledby="title description">
+  <title id="title">CANARY system architecture</title>
+  <desc id="description">Regional hardware supplier pages flow through Bright Data Scraper Studio, CANARY validation and normalization, Neon history, and the operations command center. Invalid collector output enters a same-collector self-healing and verification loop.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#173452" flood-opacity=".08"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#7f9bb7"/></marker>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2878ff"/></marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#35b46f"/></marker>
+    <style>
+      .sans{font-family:"Avenir Next",Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.panel{fill:#fff;stroke:#dfe8f2;stroke-width:1.5}.layer{font-size:12px;letter-spacing:1.7px;fill:#4a75a7}.heading{font-size:23px;font-weight:600;fill:#0a1520}.body{font-size:14px;fill:#617184}.small{font-size:12px;fill:#617184}.code{font-size:11px;fill:#3275bf}.node{fill:#f7f9fc;stroke:#e2eaf2}.node-title{font-size:14px;font-weight:600;fill:#0a1520}.node-copy{font-size:11px;fill:#617184}.flow{fill:none;stroke:#7f9bb7;stroke-width:2}.flow-blue{fill:none;stroke:#2878ff;stroke-width:2.5}.flow-green{fill:none;stroke:#35b46f;stroke-width:2.5}.step-number{font-size:11px;font-weight:700;fill:#fff}.loop-title{font-size:16px;font-weight:600;fill:#0a1520}.loop-copy{font-size:11px;fill:#617184}
+    </style>
+  </defs>
+
+  <rect width="1440" height="900" rx="24" fill="#f7f9fc"/>
+  <g class="sans">
+    <text x="40" y="52" class="layer">CANARY SYSTEM ARCHITECTURE</text>
+    <text x="40" y="92" class="heading" font-size="32">A stable hardware-supply layer over an unreliable web.</text>
+    <text x="40" y="121" class="body">Bright Data collects and repairs the web data plane; CANARY validates, remembers, and turns it into production intelligence.</text>
+
+    <path class="flow" marker-end="url(#arrow)" d="M270 352H292"/>
+    <path class="flow-blue" marker-end="url(#arrow-blue)" d="M550 352H572"/>
+    <path class="flow-green" marker-end="url(#arrow-green)" d="M860 352H882"/>
+    <path class="flow" marker-end="url(#arrow)" d="M1110 352H1132"/>
+
+    <g filter="url(#shadow)">
+      <rect class="panel" x="40" y="158" width="230" height="420" rx="18"/>
+      <text x="62" y="191" class="layer">01 · PUBLIC WEB</text>
+      <text x="62" y="225" class="heading">Supplier sources</text>
+      <text x="62" y="250" class="small">Regional, public hardware pages</text>
+      <rect class="node" x="62" y="281" width="186" height="106" rx="13"/>
+      <circle cx="82" cy="303" r="6" fill="#2878ff"/>
+      <text x="96" y="308" class="node-title">RobotShop US</text>
+      <text x="82" y="334" class="node-copy">North America · USD</text>
+      <text x="82" y="356" class="node-copy">12 configured products</text>
+      <text x="82" y="376" class="code mono">c_mt4sel7d…</text>
+      <rect class="node" x="62" y="405" width="186" height="106" rx="13"/>
+      <circle cx="82" cy="427" r="6" fill="#35b46f"/>
+      <text x="96" y="432" class="node-title">Botland Poland</text>
+      <text x="82" y="458" class="node-copy">European Union · EUR</text>
+      <text x="82" y="480" class="node-copy">12 configured products</text>
+      <text x="82" y="500" class="code mono">c_mt4sss952…</text>
+      <text x="62" y="548" class="small">HTML changes without notice</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect class="panel" x="300" y="158" width="250" height="420" rx="18"/>
+      <text x="322" y="191" class="layer">02 · LIVE DATA PLANE</text>
+      <text x="322" y="225" class="heading">Bright Data</text>
+      <text x="322" y="250" class="small">Scraper Studio collectors</text>
+      <rect x="322" y="281" width="206" height="62" rx="12" fill="#eef6ff" stroke="#cfe0f0"/>
+      <circle cx="344" cy="312" r="14" fill="#2878ff"/><text x="340.5" y="316" class="step-number">1</text>
+      <text x="369" y="308" class="node-title">Trigger + poll</text><text x="369" y="326" class="node-copy">Manual or scheduled runs</text>
+      <rect x="322" y="357" width="206" height="62" rx="12" fill="#f7f9fc" stroke="#e2eaf2"/>
+      <circle cx="344" cy="388" r="14" fill="#7f9bb7"/><text x="340.5" y="392" class="step-number">2</text>
+      <text x="369" y="384" class="node-title">Structured dataset</text><text x="369" y="402" class="node-copy">Price, stock, identity, URL</text>
+      <rect x="322" y="433" width="206" height="62" rx="12" fill="#edf9f3" stroke="#bfe8d1"/>
+      <circle cx="344" cy="464" r="14" fill="#35b46f"/><text x="340.5" y="468" class="step-number">3</text>
+      <text x="369" y="460" class="node-title">Repair in place</text><text x="369" y="478" class="node-copy">Preserves the same c_* ID</text>
+      <text x="322" y="534" class="small">Global collection + refactoring API</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect class="panel" x="580" y="158" width="280" height="420" rx="18"/>
+      <text x="602" y="191" class="layer">03 · TRUST BOUNDARY</text>
+      <text x="602" y="225" class="heading">CANARY pipeline</text>
+      <text x="602" y="250" class="small">No source output is trusted by default</text>
+      <rect class="node" x="602" y="281" width="236" height="72" rx="12"/>
+      <text x="620" y="307" class="node-title">Contract validation</text>
+      <text x="620" y="329" class="node-copy">Required fields · types · row count</text>
+      <rect class="node" x="602" y="367" width="236" height="72" rx="12"/>
+      <text x="620" y="393" class="node-title">Normalize schema v1.0.0</text>
+      <text x="620" y="415" class="node-copy">Currency · availability · provenance</text>
+      <rect class="node" x="602" y="453" width="236" height="72" rx="12"/>
+      <text x="620" y="479" class="node-title">Source-health state machine</text>
+      <text x="620" y="501" class="node-copy">Healthy · degraded · healing · recovered</text>
+      <rect x="602" y="537" width="236" height="23" rx="11.5" fill="#fff1ef"/>
+      <text x="620" y="553" class="code mono" fill="#ba443c">FAILURES ≠ ZERO STOCK</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect class="panel" x="890" y="158" width="220" height="420" rx="18"/>
+      <text x="912" y="191" class="layer">04 · MEMORY</text>
+      <text x="912" y="225" class="heading">Neon Postgres</text>
+      <text x="912" y="250" class="small">Persistent time-series evidence</text>
+      <rect class="node" x="912" y="281" width="176" height="64" rx="12"/>
+      <text x="930" y="308" class="node-title">Observations</text><text x="930" y="327" class="node-copy">Price · inventory · availability</text>
+      <rect class="node" x="912" y="359" width="176" height="64" rx="12"/>
+      <text x="930" y="386" class="node-title">Run history</text><text x="930" y="405" class="node-copy">Snapshots · validation results</text>
+      <rect class="node" x="912" y="437" width="176" height="64" rx="12"/>
+      <text x="930" y="464" class="node-title">Recovery ledger</text><text x="930" y="483" class="node-copy">Before/after proof · same ID</text>
+      <text x="912" y="534" class="small">History accumulates over time</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect class="panel" x="1140" y="158" width="260" height="420" rx="18"/>
+      <text x="1162" y="191" class="layer">05 · OPERATIONS</text>
+      <text x="1162" y="225" class="heading">CANARY product</text>
+      <text x="1162" y="250" class="small">Decisions backed by source evidence</text>
+      <rect x="1162" y="281" width="216" height="82" rx="12" fill="#101e19"/>
+      <text x="1180" y="309" font-size="14" font-weight="600" fill="#fff">Production dashboard</text>
+      <text x="1180" y="332" font-size="11" fill="#b8c4be">Readiness · risks · impact</text>
+      <circle cx="1353" cy="321" r="11" fill="#b9f45f"/><path d="M1348 321l3 3 6-7" fill="none" stroke="#0a1520" stroke-width="2"/>
+      <rect class="node" x="1162" y="377" width="216" height="64" rx="12"/>
+      <text x="1180" y="404" class="node-title">Supplier analytics</text><text x="1180" y="423" class="node-copy">Coverage · trends · provenance</text>
+      <rect class="node" x="1162" y="455" width="216" height="64" rx="12"/>
+      <text x="1180" y="482" class="node-title">Verified recovery</text><text x="1180" y="501" class="node-copy">Degrade → heal → verify</text>
+      <text x="1162" y="548" class="small">Stable API for downstream teams</text>
+    </g>
+
+    <g filter="url(#shadow)">
+      <rect x="40" y="626" width="1360" height="220" rx="18" fill="#fff" stroke="#dfe8f2" stroke-width="1.5"/>
+      <text x="62" y="658" class="layer">SELF-HEALING CONTROL LOOP</text>
+      <text x="62" y="688" class="loop-title">The website changes. The downstream product does not.</text>
+      <path d="M288 763H364" class="flow" marker-end="url(#arrow)"/>
+      <path d="M538 763H614" class="flow-blue" marker-end="url(#arrow-blue)"/>
+      <path d="M788 763H864" class="flow-blue" marker-end="url(#arrow-blue)"/>
+      <path d="M1038 763H1114" class="flow-green" marker-end="url(#arrow-green)"/>
+      <g><circle cx="178" cy="763" r="52" fill="#fff1ef" stroke="#ffc9c4"/><text x="178" y="756" text-anchor="middle" class="loop-title" fill="#ba443c">Detect</text><text x="178" y="777" text-anchor="middle" class="loop-copy">invalid output</text></g>
+      <g><circle cx="448" cy="763" r="52" fill="#fff8e9" stroke="#f5d69a"/><text x="448" y="756" text-anchor="middle" class="loop-title">Degrade</text><text x="448" y="777" text-anchor="middle" class="loop-copy">quarantine rows</text></g>
+      <g><circle cx="698" cy="763" r="52" fill="#eef6ff" stroke="#c6dcf4"/><text x="698" y="756" text-anchor="middle" class="loop-title">Repair</text><text x="698" y="777" text-anchor="middle" class="loop-copy">Bright Data fixer</text></g>
+      <g><circle cx="948" cy="763" r="52" fill="#eef6ff" stroke="#c6dcf4"/><text x="948" y="756" text-anchor="middle" class="loop-title">Verify</text><text x="948" y="777" text-anchor="middle" class="loop-copy">same ID + schema</text></g>
+      <g><circle cx="1208" cy="763" r="52" fill="#edf9f3" stroke="#bfe8d1"/><text x="1208" y="756" text-anchor="middle" class="loop-title" fill="#248554">Recover</text><text x="1208" y="777" text-anchor="middle" class="loop-copy">accept valid rows</text></g>
+      <rect x="1268" y="730" width="104" height="66" rx="12" fill="#101e19"/><text x="1320" y="754" text-anchor="middle" font-size="10" fill="#b8c4be" class="mono">CONTRACT</text><text x="1320" y="777" text-anchor="middle" font-size="17" font-weight="600" fill="#fff">UNCHANGED</text>
+    </g>
+  </g>
+</svg>
